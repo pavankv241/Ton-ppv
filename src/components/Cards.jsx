@@ -157,6 +157,9 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
   // Time Complexity: O(1) for state updates
   // Space Complexity: O(1) for state references
   const handlePlayVideo = () => {
+    console.log("Watch Video button clicked!");
+    console.log("Setting player to true and current video to:", item);
+    console.log("Video URL:", item.videoUrl);
     setPlayer(true);
     setCurrVideo(item);
   }
@@ -202,6 +205,10 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
           <h4 className='text-white text-lg font-thin mt-1'>Price: <span className='text-blue-400'><strong>{item.price} </strong></span> ETH</h4>
           <h5 className='text-white text-sm font-thin mt-1'>Duration: {Math.floor(item.displayTime / 60)} minutes</h5>
           <div className='flex text-white justify-between items-center mb-3 gap-4 mt-3'>
+            {/* Debug info */}
+            <div className='text-xs text-gray-400 mb-2'>
+              Debug: canView={canView.toString()}, player={player.toString()}, processing={processing.toString()}
+            </div>
             {/* CONDITIONAL RENDERING - Payment vs play button based on access */}
             {!player && (
               canView ? (
@@ -217,7 +224,12 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
                   type="button" 
                   className="text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 font-medium rounded text-sm px-5 py-1.5 text-center me-2" 
                   disabled={processing} 
-                  onClick={() => { handlePayment(item) }}
+                  onClick={() => { 
+                    console.log("Pay button clicked!");
+                    console.log("Processing state:", processing);
+                    console.log("Item to pay for:", item);
+                    handlePayment(item) 
+                  }}
                 >
                   {processing ? "Processing..." : `Pay ${item.price} ETH`}
                 </button>

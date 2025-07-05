@@ -118,6 +118,9 @@ function App() {
           setAccount(address);
           
           const marketplacecontract = await getContract(true);
+          console.log("Marketplace contract initialized:", marketplacecontract);
+          console.log("Contract address:", marketplacecontract.address);
+          console.log("Contract functions:", Object.keys(marketplacecontract.functions));
           setMarketplace(marketplacecontract);
           
           const network = await provider.getNetwork();

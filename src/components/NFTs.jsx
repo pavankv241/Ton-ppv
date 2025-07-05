@@ -126,6 +126,9 @@ function NFTs({ marketplace, setMarketplace, account }) {
           title: `Video ${i + 1}` // Display title starts from 1 for user-friendly display
         };
         console.log(`Processed video ${i} (display: ${i + 1}):`, video);
+        console.log(`Video URL: ${video.videoUrl}`);
+        console.log(`Thumbnail URL: ${video.thumbnailUrl}`);
+        console.log(`Gateway URL: ${PINATA_CONFIG.GATEWAY_URL}`);
         displayVideos.push(video);
       }
 

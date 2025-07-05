@@ -15,7 +15,24 @@ function PlayerCard({ item, player, setPlayer, setCurrVideo, currVideo }) {
         <div className='audio-div' style={{ height: "auto", width: "auto" }}>
           <div className='audio-inner p-2'>
             <div className='flex flex-col justify-center items-center'>
-              <video width="auto" height="400" controls autoPlay>
+              {console.log("PlayerCard rendering with item:", item)}
+              {console.log("Video URL in PlayerCard:", item.videoUrl)}
+              <video 
+                width="auto" 
+                height="400" 
+                controls 
+                autoPlay
+                onError={(e) => {
+                  console.error("Video loading error:", e);
+                  console.error("Video URL that failed:", item.videoUrl);
+                }}
+                onLoadStart={() => {
+                  console.log("Video loading started for URL:", item.videoUrl);
+                }}
+                onCanPlay={() => {
+                  console.log("Video can play for URL:", item.videoUrl);
+                }}
+              >
                 <source src={item.videoUrl} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
