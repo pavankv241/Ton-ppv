@@ -10,29 +10,27 @@
  * 6. Validation Functions - Boolean logic for configuration checks
  */
 
-// Configuration file for Premium Flow application
+// Configuration file for Premium Zora application
 
 // Pinata IPFS Configuration
 // Time Complexity: O(1) for configuration access
 // Space Complexity: O(1) for configuration storage
 export const PINATA_CONFIG = {
-  JWT: process.env.REACT_APP_PINATA_JWT || "YOUR_PINATA_JWT_TOKEN_HERE",
+  JWT: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI1M2RhMTZjMy1jYzJhLTRlOTAtYWM4MS01ZTE2MDNmMGI5NWEiLCJlbWFpbCI6InBhdmFua3VtYXJrdi4yM21jYUBjYW1icmlkZ2UuZWR1LmluIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiRlJBMSJ9LHsiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiTllDMSJ9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6IjJiODU1NGNhZTRlMjIwMTk0Y2ViIiwic2NvcGVkS2V5U2VjcmV0IjoiZmFmNTJjOGNiYWI1MDVjM2E0ZGQ2MDkxNWQ3YTVjMTdlNzA0OTliZmU2MGFjMjI3M2EwNTNhYjI4MTgwYTVjZCIsImV4cCI6MTc4MzIxNjE1Mn0.WPLdFmSq4Ve8-6HMpA6ZPDj9YC1nPyyGF8vWFTxCBrg.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI5OTMyNjE0OC1hMzIzLTQ0YzItYjUwNi00MTU0YTNiMTNmMzMiLCJlbWFpbCI6ImFyaWZha2h0YXI5MDJAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiRlJBMSJ9LHsiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiTllDMSJ9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6IjMzZGRkZjg0YjEyOTQxMjI3ZWI3Iiwic2NvcGVkS2V5U2VjcmV0IjoiNDBiNDQ2ZTJkYWNjM2Y3MzQ5OTI4ODgxZTc1NmVlYzg4OGE3YmYxNjEyYWRlYzRkODE2MmYxY2NjNTI5ZWZhNCIsImV4cCI6MTc4MTg4NDY5MX0.Z0T0LvsNHTyV7YLBmiuzb79xI3uUaIm2L8YQDZ2cKBc',
   API_URL: "https://api.pinata.cloud/pinning/pinFileToIPFS",
   GATEWAY_URL: "https://ipfs.io/ipfs/"
 };
 
-// Flow EVM Testnet Configuration
-// Time Complexity: O(1) for configuration access
-// Space Complexity: O(1) for configuration storage
-export const FLOW_CONFIG = {
-  CONTRACT_ADDRESS: '0xfd82912dEd827BE2C4317bCb290b81b58Bf4CD6F',
-  CHAIN_ID: "0x221",
-  CHAIN_NAME: "Flow EVM Testnet",
-  RPC_URL: "https://testnet.evm.nodes.onflow.org",
-  BLOCK_EXPLORER: "https://evm-testnet.flowscan.io",
+// Zora Sepolia Testnet Configuration
+export const ZORA_CONFIG = {
+  CONTRACT_ADDRESS: '0xBA37015a3a67678c243A20Ac706e164C02F321F1',
+  CHAIN_ID: '0x3b9ac9ff', // Correct chain ID from Zora Sepolia RPC
+  CHAIN_NAME: 'Zora Sepolia Testnet',
+  RPC_URL: 'https://sepolia.rpc.zora.energy',
+  BLOCK_EXPLORER: 'https://sepolia.explorer.zora.energy',
   NATIVE_CURRENCY: {
-    name: "FLOW",
-    symbol: "FLOW",
+    name: 'ETH',
+    symbol: 'ETH',
     decimals: 18
   }
 };
@@ -41,8 +39,8 @@ export const FLOW_CONFIG = {
 // Time Complexity: O(1) for configuration access
 // Space Complexity: O(1) for configuration storage
 export const APP_CONFIG = {
-  NAME: "Premium Flow",
-  DESCRIPTION: "PayPerView Video Platform on Flow EVM",
+  NAME: "Premium Zora",
+  DESCRIPTION: "PayPerView Video Platform on Zora Sepolia",
   VERSION: "1.0.0"
 };
 
@@ -51,7 +49,7 @@ export const APP_CONFIG = {
 // Space Complexity: O(1) for default value storage
 export const DEFAULTS = {
   DISPLAY_TIME: 3600, // 1 hour in seconds
-  MIN_PRICE: 0.001,   // Minimum price in FLOW
+  MIN_PRICE: 0.001,   // Minimum price in ETH
   MAX_FILE_SIZE: 100 * 1024 * 1024 // 100MB
 };
 

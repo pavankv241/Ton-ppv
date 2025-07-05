@@ -1,5 +1,5 @@
 /**
- * Premium Flow - PayPerView Video Platform
+ * Premium Zora - PayPerView Video Platform
  * 
  * DSA CONCEPTS USED:
  * 1. State Management (React Hooks) - Array-based state updates
@@ -75,13 +75,13 @@ function App() {
           });
           return await switchNetwork(); // Recursive call
         } catch (addError) {
-          toast.error("Failed to add Flow EVM Testnet to MetaMask", {
+          toast.error("Failed to add Zora Sepolia Testnet to MetaMask", {
             position: "top-center"
           });
         }
       } else {
         toast.error((
-          <div>Some error occurred while switching network <br/> Please switch to Flow EVM Testnet</div>
+          <div>Some error occurred while switching network <br/> Please switch to Zora Sepolia Testnet</div>
         ), {
           position: "top-center"
         });

@@ -118,6 +118,13 @@ function Create({ marketplace, account, setMarketplace }) {
       const price = parseEther(forminfo.price.toString());
       const displayTime = DEFAULTS.DISPLAY_TIME; // Use default display time
 
+      console.log("Uploading to blockchain with data:");
+      console.log("Video hash:", videoHash);
+      console.log("Thumbnail hash:", thumbnailHash);
+      console.log("Price:", price.toString());
+      console.log("Display time:", displayTime);
+      console.log("Contract address:", marketplace.address);
+
       toast.info("Uploading video to blockchain", {
         position: "top-center",
       })
@@ -125,20 +132,26 @@ function Create({ marketplace, account, setMarketplace }) {
       // SMART CONTRACT INTERACTION - Transaction pattern
       // Time Complexity: O(1) for contract call
       // Space Complexity: O(1) for transaction data
-      const tx = await marketplace.uploadVideo(
-        videoHash,
-        thumbnailHash,
-        price,
-        displayTime
+      const tx = await marketplace.mint(
+        videoHash,  // _tokenURI (using video hash as token URI)
+        price       // _price
       );
+
+      console.log("Transaction hash:", tx.hash);
 
       toast.info("Wait till transaction confirms....", {
         position: "top-center"
       })
 
       // TRANSACTION CONFIRMATION - Wait for blockchain confirmation
-      await tx.wait()
+      const receipt = await tx.wait()
+      console.log("Transaction confirmed:", receipt);
       toast.success("Video uploaded to blockchain successfully", { position: "top-center" })
+      
+      // Refresh the page to show the new video
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
 
     } catch (error) {
       // ERROR HANDLING - Try-catch with user feedback
@@ -165,8 +178,14 @@ function Create({ marketplace, account, setMarketplace }) {
             </div>
 
             <div className="mb-4">
-              <label htmlFor="price" className="block mb-2 text-sm font-medium text-white">Price (FLOW)</label>
-              <input onChange={handleChange} type="number" id="price" name='price' value={forminfo.price} step="0.001" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" placeholder="0.001 FLOW" />
+              <label htmlFor="price" className="block mb-2 text-sm font-medium text-white">Price (ETH)</label>
+              <input
+                type="number"
+                id="price"
+                name="price"
+                value={forminfo.price}
+                onChange={handleChange}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" placeholder="0.001 ETH" />
             </div>
             
             <div className='text-center'>

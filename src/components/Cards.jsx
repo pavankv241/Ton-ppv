@@ -27,6 +27,7 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
   const [liked, setLiked] = useState(false)
   const [disliked, setDisliked] = useState(false)
   const [canView, setCanView] = useState(false)
+  const [hasAccess, setHasAccess] = useState(false)
 
   // EFFECT HOOK - Dependency-based side effects
   // Time Complexity: O(1) for effect execution
@@ -35,19 +36,19 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
     checkViewAccess();
   }, [item, account]);
 
-  // BLOCKCHAIN VALIDATION - Smart contract interaction for access control
+  // ACCESS VALIDATION - Boolean logic for user permissions
   // Time Complexity: O(1) for contract call
   // Space Complexity: O(1) for boolean result
   const checkViewAccess = async () => {
-    if (!marketplace || !account) return;
-    
     try {
-      const canViewVideo = await marketplace.canView(item.id, account);
-      setCanView(canViewVideo);
+      const marketplacecontract = marketplace
+      const hasAccess = await marketplacecontract.getview(item.id);
+      setCanView(hasAccess);
     } catch (error) {
-      console.error("Error checking view access:", error);
+      console.log("Error checking access:", error);
+      setCanView(false);
     }
-  };
+  }
 
   // EVENT HANDLING - User interaction processing with state updates
   // Time Complexity: O(1) for state updates
@@ -80,7 +81,7 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
       console.log("price to pay: " + price);
       
       // SMART CONTRACT INTERACTION - Payable function call
-      const tx = await marketplacecontract.payToView(item.id, {
+      const tx = await marketplacecontract.viewitem(item.id, {
         value: price
       });
       
@@ -154,7 +155,7 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
         )}
         <div className='flex flex-col justify-center items-center'>
           <h3 className='text-white text-2xl font-thin mt-3'>{item.title}</h3>
-          <h4 className='text-white text-2xl font-thin mt-3'>Price: <span className='text-green-400'><strong>{item.price} </strong></span> FLOW</h4>
+          <h4 className='text-white text-lg font-thin mt-1'>Price: <span className='text-blue-400'><strong>{item.price} </strong></span> ETH</h4>
           <h5 className='text-white text-sm font-thin mt-1'>Duration: {Math.floor(item.displayTime / 60)} minutes</h5>
           <div className='flex text-white justify-between items-center mb-3 gap-4 mt-3'>
             {/* CONDITIONAL RENDERING - Payment vs play button based on access */}
@@ -174,7 +175,7 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
                   disabled={processing} 
                   onClick={() => { handlePayment(item) }}
                 >
-                  {processing ? "Processing..." : `Pay ${item.price} FLOW`}
+                  {processing ? "Processing..." : `Pay ${item.price} ETH`}
                 </button>
               )
             )}
