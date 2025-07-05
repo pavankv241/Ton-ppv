@@ -15,7 +15,7 @@ import { ethers } from 'ethers'
 import '../App.css';
 
 import { toast } from 'react-toastify'
-import { parseEther } from '../contractConfig'
+import { parseEther, formatEther } from '../contractConfig'
 import { AiOutlineLike, AiOutlineDislike } from "react-icons/ai"
 import { FaRegShareSquare } from "react-icons/fa";
 
@@ -43,10 +43,21 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
     if (!marketplace || !account) return;
     
     try {
+      console.log(`Checking view access for video ID: ${item.id}, account: ${account}`);
+      console.log("Marketplace contract address:", marketplace.address);
+      console.log("Item details:", item);
+      
       const canViewVideo = await marketplace.canView(item.id, account);
+      console.log(`Can view video ${item.id}: ${canViewVideo}`);
       setCanView(canViewVideo);
     } catch (error) {
       console.error("Error checking view access:", error);
+      console.error("Error details:", {
+        message: error.message,
+        code: error.code,
+        data: error.data,
+        transaction: error.transaction
+      });
       setCanView(false);
     }
   }
@@ -75,26 +86,58 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
     setProcessing(true)
     try {
       const marketplacecontract = marketplace
-      console.log(marketplacecontract);   
+      console.log("Marketplace contract:", marketplacecontract);   
+      console.log("Paying for video ID:", item.id);
+      console.log("Video details:", item);
+      
+      // Validate video ID
+      if (item.id === undefined || item.id === null) {
+        throw new Error("Invalid video ID");
+      }
+      
+      // Check if video exists in contract
+      try {
+        const [uploaders, videoHashes, thumbnailHashes, prices, displayTimes] = await marketplacecontract.getVideos();
+        console.log("Available videos count:", uploaders.length);
+        console.log("Video ID to pay for:", item.id);
+        
+        if (item.id >= uploaders.length) {
+          throw new Error(`Video ID ${item.id} does not exist. Available videos: ${uploaders.length}`);
+        }
+      } catch (validationError) {
+        console.error("Video validation failed:", validationError);
+        throw validationError;
+      }
       
       // DATA TRANSFORMATION - Price conversion for blockchain
+      console.log("Original price string:", item.price);
+      console.log("Price type:", typeof item.price);
       const price = parseEther(item.price);
-      console.log("price to pay: " + price);
+      console.log("Parsed price (wei):", price.toString());
+      console.log("Price in ETH:", formatEther(price));
       
       // SMART CONTRACT INTERACTION - Payable function call
+      console.log("Calling payToView with video ID:", item.id, "and value:", price);
+      console.log("Contract address:", marketplacecontract.address);
+      console.log("Account:", account);
+      
       const tx = await marketplacecontract.payToView(item.id, {
         value: price
       });
       
+      console.log("Transaction hash:", tx.hash);
       toast.info("Your transaction is being processed", {
         position: "top-center"
       })
 
       // TRANSACTION CONFIRMATION - Wait for blockchain confirmation
-      await tx.wait();
+      console.log("Waiting for transaction confirmation...");
+      const receipt = await tx.wait();
+      console.log("Transaction confirmed:", receipt);
       toast.success("Payment successful! You can now view the video.", { position: "top-center" })
       
       // STATE UPDATE - Refresh access validation
+      console.log("Refreshing view access...");
       await checkViewAccess();
       
       setPlayer(true);

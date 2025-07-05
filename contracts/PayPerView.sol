@@ -60,6 +60,15 @@ contract PayPerView {
     }
 
     function canView(uint256 videoId, address user) external view returns (bool) {
+        require(videoId < videos.length, "Invalid videoId");
+        Video storage vid = videos[videoId];
+        
+        // Uploader can always view their own video
+        if (user == vid.uploader) {
+            return true;
+        }
+        
+        // Other users can view if they have paid and unlock time hasn't expired
         return viewUnlockTime[videoId][user] > block.timestamp;
     }
 

@@ -69,7 +69,7 @@ function NFTs({ marketplace, setMarketplace, account }) {
               console.log(`Item ${i}:`, item);
               
               const video = {
-                id: i,
+                id: i, // Keep as i since marketplace items start from 1
                 uploader: item.seller,
                 videoHash: item.tokenURI,
                 thumbnailHash: "",
@@ -115,7 +115,7 @@ function NFTs({ marketplace, setMarketplace, account }) {
       for (let i = 0; i < uploaders.length; i++) {
         // MEMORY MANAGEMENT - Efficient object creation
         const video = {
-          id: i,
+          id: i, // Video IDs start from 0 in the contract
           uploader: uploaders[i],
           videoHash: videoHashes[i],
           thumbnailHash: thumbnailHashes[i],
@@ -123,13 +123,39 @@ function NFTs({ marketplace, setMarketplace, account }) {
           displayTime: displayTimes[i].toString(),
           videoUrl: `${PINATA_CONFIG.GATEWAY_URL}${videoHashes[i]}`,
           thumbnailUrl: `${PINATA_CONFIG.GATEWAY_URL}${thumbnailHashes[i]}`,
-          title: `Video ${i + 1}` // You might want to store titles in metadata
+          title: `Video ${i + 1}` // Display title starts from 1 for user-friendly display
         };
-        console.log(`Processed video ${i}:`, video);
+        console.log(`Processed video ${i} (display: ${i + 1}):`, video);
         displayVideos.push(video);
       }
 
       console.log("Final display videos:", displayVideos);
+      
+      // Test contract interaction
+      if (displayVideos.length > 0) {
+        console.log("Testing contract interaction...");
+        try {
+          const testVideo = displayVideos[0];
+          console.log("Testing with video:", testVideo);
+          
+          // Test canView function
+          const canViewResult = await contract.canView(testVideo.id, account || "0x0000000000000000000000000000000000000000");
+          console.log(`Can view test video ${testVideo.id}: ${canViewResult}`);
+          
+          // Test getVideos function again
+          const [testUploaders, testVideoHashes, testThumbnailHashes, testPrices, testDisplayTimes] = await contract.getVideos();
+          console.log("Test getVideos result:", {
+            uploaders: testUploaders,
+            videoHashes: testVideoHashes,
+            thumbnailHashes: testThumbnailHashes,
+            prices: testPrices,
+            displayTimes: testDisplayTimes
+          });
+        } catch (testError) {
+          console.error("Contract test failed:", testError);
+        }
+      }
+      
       setVideos(displayVideos);
       setLoading(false);
     } catch (error) {

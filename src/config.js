@@ -23,7 +23,7 @@ export const PINATA_CONFIG = {
 
 // Zora Sepolia Testnet Configuration
 export const ZORA_CONFIG = {
-  CONTRACT_ADDRESS: '0xBA37015a3a67678c243A20Ac706e164C02F321F1',
+  CONTRACT_ADDRESS: '0x3557CC57bFeC1Ba4B7119e5589712A6e3B9A3DC7',
   CHAIN_ID: '0x3b9ac9ff', // Correct chain ID from Zora Sepolia RPC
   CHAIN_NAME: 'Zora Sepolia Testnet',
   RPC_URL: 'https://sepolia.rpc.zora.energy',
