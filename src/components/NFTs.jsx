@@ -43,54 +43,90 @@ function NFTs({ marketplace, setMarketplace, account }) {
       console.log("Contract address:", contract.address);
       console.log("Contract ABI functions:", Object.keys(contract.functions));
 
-      // Check if itemCount function exists
-      if (!contract.itemCount) {
-        console.error("itemCount function not found in contract!");
+      // Check if getVideos function exists
+      if (!contract.getVideos) {
+        console.error("getVideos function not found in contract!");
         console.log("Available functions:", Object.keys(contract.functions));
-        setLoading(false);
-        return;
-      }
-
-      // Get the total number of items
-      console.log("Calling itemCount()...");
-      const itemCount = await contract.itemCount();
-      console.log("Total items:", itemCount.toString());
-
-      if (itemCount.toString() === "0") {
-        console.log("No items found in contract");
-        setVideos([]);
+        
+        // Try alternative functions
+        if (contract.itemCount) {
+          console.log("Found itemCount function, trying marketplace approach...");
+          const itemCount = await contract.itemCount();
+          console.log("Item count:", itemCount.toString());
+          
+          if (itemCount.toString() === "0") {
+            console.log("No items found");
+            setVideos([]);
+            setLoading(false);
+            return;
+          }
+          
+          // Use marketplace approach
+          let displayVideos = [];
+          for (let i = 1; i <= itemCount; i++) {
+            try {
+              const item = await contract.items(i);
+              console.log(`Item ${i}:`, item);
+              
+              const video = {
+                id: i,
+                uploader: item.seller,
+                videoHash: item.tokenURI,
+                thumbnailHash: "",
+                price: formatEther(item.price),
+                displayTime: "3600",
+                videoUrl: `${PINATA_CONFIG.GATEWAY_URL}${item.tokenURI}`,
+                thumbnailUrl: "",
+                title: `Video ${i}`
+              };
+              displayVideos.push(video);
+            } catch (itemError) {
+              console.log(`Error fetching item ${i}:`, itemError);
+            }
+          }
+          
+          setVideos(displayVideos);
+          setLoading(false);
+          return;
+        }
+        
         setLoading(false);
         return;
       }
 
       // BLOCKCHAIN DATA RETRIEVAL - Smart contract interaction
-      // Time Complexity: O(n) where n is number of items
-      // Space Complexity: O(n) for returned data
-      console.log("Fetching items...");
-      let displayVideos = [];
+      // Time Complexity: O(1) for contract call, O(n) for data processing
+      // Space Complexity: O(n) for returned arrays
+      console.log("Calling getVideos()...");
+      const [uploaders, videoHashes, thumbnailHashes, prices, displayTimes] = await contract.getVideos();
       
-      for (let i = 1; i <= itemCount; i++) {
-        try {
-          const item = await contract.items(i);
-          console.log(`Item ${i}:`, item);
-          
-          // MEMORY MANAGEMENT - Efficient object creation
-          const video = {
-            id: i,
-            uploader: item.seller,
-            videoHash: item.tokenURI, // Using tokenURI as video hash
-            thumbnailHash: "", // No thumbnail in this contract
-            price: formatEther(item.price),
-            displayTime: "3600", // Default display time
-            videoUrl: `${PINATA_CONFIG.GATEWAY_URL}${item.tokenURI}`,
-            thumbnailUrl: "",
-            title: `Video ${i}` // You might want to store titles in metadata
-          };
-          console.log(`Processed video ${i}:`, video);
-          displayVideos.push(video);
-        } catch (itemError) {
-          console.log(`Error fetching item ${i}:`, itemError);
-        }
+      console.log("Raw data from contract:");
+      console.log("Uploaders:", uploaders);
+      console.log("Video hashes:", videoHashes);
+      console.log("Thumbnail hashes:", thumbnailHashes);
+      console.log("Prices:", prices);
+      console.log("Display times:", displayTimes);
+      console.log("Videos found:", uploaders.length);
+
+      // ARRAY PROCESSING - Data transformation and mapping
+      // Time Complexity: O(n) where n is number of videos
+      // Space Complexity: O(n) for transformed data structure
+      let displayVideos = [];
+      for (let i = 0; i < uploaders.length; i++) {
+        // MEMORY MANAGEMENT - Efficient object creation
+        const video = {
+          id: i,
+          uploader: uploaders[i],
+          videoHash: videoHashes[i],
+          thumbnailHash: thumbnailHashes[i],
+          price: formatEther(prices[i]),
+          displayTime: displayTimes[i].toString(),
+          videoUrl: `${PINATA_CONFIG.GATEWAY_URL}${videoHashes[i]}`,
+          thumbnailUrl: `${PINATA_CONFIG.GATEWAY_URL}${thumbnailHashes[i]}`,
+          title: `Video ${i + 1}` // You might want to store titles in metadata
+        };
+        console.log(`Processed video ${i}:`, video);
+        displayVideos.push(video);
       }
 
       console.log("Final display videos:", displayVideos);
@@ -102,7 +138,8 @@ function NFTs({ marketplace, setMarketplace, account }) {
       console.error("Error details:", {
         message: error.message,
         code: error.code,
-        data: error.data
+        data: error.data,
+        transaction: error.transaction
       });
       setLoading(false);
     }
