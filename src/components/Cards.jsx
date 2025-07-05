@@ -28,6 +28,7 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
   const [disliked, setDisliked] = useState(false)
   const [canView, setCanView] = useState(false)
   const [hasAccess, setHasAccess] = useState(false)
+  const [hasPaid, setHasPaid] = useState(false) // Track if user has paid for this video
 
   // EFFECT HOOK - Dependency-based side effects
   // Time Complexity: O(1) for effect execution
@@ -86,62 +87,29 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
     setProcessing(true)
     try {
       const marketplacecontract = marketplace
-      console.log("Marketplace contract:", marketplacecontract);   
       console.log("Paying for video ID:", item.id);
-      console.log("Video details:", item);
-      
-      // Validate video ID
-      if (item.id === undefined || item.id === null) {
-        throw new Error("Invalid video ID");
-      }
-      
-      // Check if video exists in contract
-      try {
-        const [uploaders, videoHashes, thumbnailHashes, prices, displayTimes] = await marketplacecontract.getVideos();
-        console.log("Available videos count:", uploaders.length);
-        console.log("Video ID to pay for:", item.id);
-        
-        if (item.id >= uploaders.length) {
-          throw new Error(`Video ID ${item.id} does not exist. Available videos: ${uploaders.length}`);
-        }
-      } catch (validationError) {
-        console.error("Video validation failed:", validationError);
-        throw validationError;
-      }
       
       // DATA TRANSFORMATION - Price conversion for blockchain
-      console.log("Original price string:", item.price);
-      console.log("Price type:", typeof item.price);
       const price = parseEther(item.price);
-      console.log("Parsed price (wei):", price.toString());
-      console.log("Price in ETH:", formatEther(price));
+      console.log("Price to pay:", formatEther(price), "ETH");
       
       // SMART CONTRACT INTERACTION - Payable function call
-      console.log("Calling payToView with video ID:", item.id, "and value:", price);
-      console.log("Contract address:", marketplacecontract.address);
-      console.log("Account:", account);
-      
       const tx = await marketplacecontract.payToView(item.id, {
         value: price
       });
       
-      console.log("Transaction hash:", tx.hash);
       toast.info("Your transaction is being processed", {
         position: "top-center"
       })
 
       // TRANSACTION CONFIRMATION - Wait for blockchain confirmation
-      console.log("Waiting for transaction confirmation...");
-      const receipt = await tx.wait();
-      console.log("Transaction confirmed:", receipt);
-      toast.success("Payment successful! You can now view the video.", { position: "top-center" })
+      await tx.wait();
+      toast.success("Payment successful! Playing video now.", { position: "top-center" });
       
-      // STATE UPDATE - Refresh access validation
-      console.log("Refreshing view access...");
-      await checkViewAccess();
-      
+      // Play video immediately after payment
+      setHasPaid(true); // Mark that user has paid for this video
       setPlayer(true);
-      setCurrVideo(item)
+      setCurrVideo(item);
 
     } catch (error) {
       // ERROR HANDLING - Try-catch with user feedback
@@ -207,11 +175,11 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
           <div className='flex text-white justify-between items-center mb-3 gap-4 mt-3'>
             {/* Debug info */}
             <div className='text-xs text-gray-400 mb-2'>
-              Debug: canView={canView.toString()}, player={player.toString()}, processing={processing.toString()}
+              Debug: canView={canView.toString()}, hasPaid={hasPaid.toString()}, player={player.toString()}, processing={processing.toString()}
             </div>
             {/* CONDITIONAL RENDERING - Payment vs play button based on access */}
             {!player && (
-              canView ? (
+              (canView || hasPaid) ? (
                 <button 
                   type="button" 
                   className="text-white bg-gradient-to-r from-green-500 to-blue-500 hover:bg-gradient-to-l focus:ring-4 focus:outline-none focus:ring-green-200 dark:focus:ring-green-800 font-medium rounded text-sm px-5 py-1.5 text-center me-2" 
