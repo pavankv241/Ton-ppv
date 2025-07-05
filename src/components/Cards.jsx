@@ -10,7 +10,7 @@
  * 6. Memory Management - Efficient state updates
  */
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { ethers } from 'ethers'
 import '../App.css';
 
@@ -19,228 +19,101 @@ import { parseEther, formatEther } from '../contractConfig'
 import { AiOutlineLike, AiOutlineDislike } from "react-icons/ai"
 import { FaRegShareSquare } from "react-icons/fa";
 
-function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx, processing, setProcessing, marketplace }) {
+function Cards({ item, setProcessing, processing, marketplace }) {
+  const [hasPaid, setHasPaid] = useState(false);
 
-  // STATE MANAGEMENT - Component state with boolean flags
-  // Time Complexity: O(1) for state updates
-  // Space Complexity: O(1) per state variable
-  const [liked, setLiked] = useState(false)
-  const [disliked, setDisliked] = useState(false)
-  const [canView, setCanView] = useState(false)
-  const [hasAccess, setHasAccess] = useState(false)
-  const [hasPaid, setHasPaid] = useState(false) // Track if user has paid for this video
-
-  // EFFECT HOOK - Dependency-based side effects
-  // Time Complexity: O(1) for effect execution
-  // Space Complexity: O(1) for effect cleanup
-  useEffect(() => {
-    checkViewAccess();
-  }, [item, account]);
-
-  // ACCESS VALIDATION - Boolean logic for user permissions
-  // Time Complexity: O(1) for contract call
-  // Space Complexity: O(1) for boolean result
-  const checkViewAccess = async () => {
-    if (!marketplace || !account) return;
-    
-    try {
-      console.log(`Checking view access for video ID: ${item.id}, account: ${account}`);
-      console.log("Marketplace contract address:", marketplace.address);
-      console.log("Item details:", item);
-      
-      const canViewVideo = await marketplace.canView(item.id, account);
-      console.log(`Can view video ${item.id}: ${canViewVideo}`);
-      setCanView(canViewVideo);
-    } catch (error) {
-      console.error("Error checking view access:", error);
-      console.error("Error details:", {
-        message: error.message,
-        code: error.code,
-        data: error.data,
-        transaction: error.transaction
-      });
-      setCanView(false);
-    }
-  }
-
-  // EVENT HANDLING - User interaction processing with state updates
-  // Time Complexity: O(1) for state updates
-  // Space Complexity: O(1) for boolean state
-  const handleLike = () => {
-    if (disliked) {
-      setDisliked(false); // Mutually exclusive state management
-    }
-    setLiked(!liked);
-  }
-  
-  const handleDislike = () => {
-    if (liked) {
-      setLiked(false); // Mutually exclusive state management
-    }
-    setDisliked(!disliked);
-  }
-
-  // BLOCKCHAIN TRANSACTION - Payment processing algorithm
-  // Time Complexity: O(1) for contract call, O(n) for transaction confirmation
-  // Space Complexity: O(1) for transaction data
-  async function handlePayment(item) {
-    setProcessing(true)
-    try {
-      const marketplacecontract = marketplace
-      console.log("Paying for video ID:", item.id);
-      
-      // DATA TRANSFORMATION - Price conversion for blockchain
-      const price = parseEther(item.price);
-      console.log("Price to pay:", formatEther(price), "ETH");
-      
-      // SMART CONTRACT INTERACTION - Payable function call
-      const tx = await marketplacecontract.payToView(item.id, {
-        value: price
-      });
-      
-      toast.info("Your transaction is being processed", {
-        position: "top-center"
-      })
-
-      // TRANSACTION CONFIRMATION - Wait for blockchain confirmation
-      await tx.wait();
-      toast.success("Payment successful! Playing video now.", { position: "top-center" });
-      
-      // Play video immediately after payment
-      setHasPaid(true); // Mark that user has paid for this video
-      setPlayer(true);
-      setCurrVideo(item);
-
-    } catch (error) {
-      // ERROR HANDLING - Try-catch with user feedback
-      console.log(error);
-      toast.error("Payment failed. Please try again.", {
-        position: "top-center"
-      });
-    }
-    setProcessing(false)
-  }
-
-  // EVENT HANDLING - Video player state management
-  // Time Complexity: O(1) for state updates
-  // Space Complexity: O(1) for state references
-  const handlePlayVideo = () => {
-    console.log("Watch Video button clicked!");
-    console.log("Setting player to true and current video to:", item);
-    console.log("Video URL:", item.videoUrl);
-    setPlayer(true);
-    setCurrVideo(item);
-  }
-
-  // CONDITIONAL LOGIC - Thumbnail existence validation
-  // Time Complexity: O(1) for string comparison
-  // Space Complexity: O(1) for boolean result
+  const videoUrl = `https://gateway.pinata.cloud/ipfs/${item.videoHash}`;
   const hasThumbnail = item.thumbnailHash && item.thumbnailHash !== "";
 
-  return (
-    <div className='card-div'>
-      <div className='card-inner p-2'>
-        {/* CONDITIONAL RENDERING - Thumbnail vs video preview */}
-        {hasThumbnail ? (
-          <img 
-            src={item.thumbnailUrl} 
-            alt="Video thumbnail" 
-            className='object-cover w-[230px] h-[230px] rounded overflow-hidden' 
-          />
-        ) : (
-          // FALLBACK RENDERING - Video preview with play button overlay
-          <div className='w-[230px] h-[230px] rounded overflow-hidden bg-gray-700 flex items-center justify-center'>
-            <video
-              className="w-full h-full object-cover"
-              src={item.videoUrl}
-              muted
-              onLoadedData={(e) => {
-                // VIDEO PROCESSING - Set to first frame for thumbnail
-                e.target.currentTime = 0;
-              }}
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="bg-black bg-opacity-50 rounded-full p-3">
-                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        )}
-        <div className='flex flex-col justify-center items-center'>
-          <h3 className='text-white text-2xl font-thin mt-3'>{item.title}</h3>
-          <h4 className='text-white text-lg font-thin mt-1'>Price: <span className='text-blue-400'><strong>{item.price} </strong></span> ETH</h4>
-          <h5 className='text-white text-sm font-thin mt-1'>Duration: {Math.floor(item.displayTime / 60)} minutes</h5>
-          <div className='flex text-white justify-between items-center mb-3 gap-4 mt-3'>
-            {/* Debug info */}
-            <div className='text-xs text-gray-400 mb-2'>
-              Debug: canView={canView.toString()}, hasPaid={hasPaid.toString()}, player={player.toString()}, processing={processing.toString()}
-            </div>
-            {/* CONDITIONAL RENDERING - Payment vs play button based on access */}
-            {!player && (
-              (canView || hasPaid) ? (
-                <button 
-                  type="button" 
-                  className="text-white bg-gradient-to-r from-green-500 to-blue-500 hover:bg-gradient-to-l focus:ring-4 focus:outline-none focus:ring-green-200 dark:focus:ring-green-800 font-medium rounded text-sm px-5 py-1.5 text-center me-2" 
-                  onClick={handlePlayVideo}
-                >
-                  Watch Video
-                </button>
-              ) : (
-                <button 
-                  type="button" 
-                  className="text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800 font-medium rounded text-sm px-5 py-1.5 text-center me-2" 
-                  disabled={processing} 
-                  onClick={() => { 
-                    console.log("Pay button clicked!");
-                    console.log("Processing state:", processing);
-                    console.log("Item to pay for:", item);
-                    handlePayment(item) 
-                  }}
-                >
-                  {processing ? "Processing..." : `Pay ${item.price} ETH`}
-                </button>
-              )
-            )}
-          </div>
-          <div className='flex justify-center items-center gap-4 mt-2'>
-            {/* INTERACTIVE ELEMENTS - Like/Dislike/Share buttons */}
-            <button
-              type="button"
-              className={`flex items-center gap-2 text-white ${liked ? "bg-green-500" : " border border-green-500"} font-medium rounded text-sm px-4 py-1.5 text-center`}
-              onClick={() => handleLike(item)}
-            >
-              <AiOutlineLike />
-            </button>
-            <button
-              type="button"
-              className={`flex items-center gap-2 text-white ${disliked ? "bg-red-500" : "border border-red-500"} font-medium rounded text-sm px-4 py-1.5 text-center`}
-              onClick={() => handleDislike(item)}
-            >
-              <AiOutlineDislike />
-            </button>
-            <button
-              type="button"
-              className="flex items-center gap-2 text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded text-sm px-4 py-1.5 text-center"
-              onClick={() => {
-                // CLIPBOARD OPERATION - Copy to clipboard functionality
-                navigator.clipboard.writeText("https://ripples-of-music.netlify.app/")
-                  .then(() => {
-                    toast.success("Link copied to clipboard!", {
-                      position: "top-center"
-                    });
-                  })
-                  .catch(err => {
-                    console.error("Failed to copy: ", err);
-                  });
-              }}
-            >
-              <FaRegShareSquare /> Share
-            </button>
-          </div>
-        </div>
+  async function handlePayment() {
+    setProcessing(true);
+    try {
+      const price = parseEther(item.price);
+      const tx = await marketplace.payToView(item.id, { value: price });
+      await tx.wait();
+      setHasPaid(true);
+      toast.success("Payment successful! Enjoy your video.", { position: "top-center" });
+    } catch (error) {
+      toast.error("Payment failed. Please try again.", { position: "top-center" });
+    }
+    setProcessing(false);
+  }
 
+  return (
+    <div className="card-div bg-[#181824] rounded-xl shadow-lg p-4 flex flex-col items-center w-[320px]">
+      <div className="w-full flex flex-col items-center">
+        {/* Video or Thumbnail */}
+        <div className="w-[260px] h-[180px] rounded-lg overflow-hidden bg-gray-800 flex items-center justify-center mb-4 relative">
+          {hasPaid ? (
+            <video
+              src={videoUrl}
+              controls
+              autoPlay
+              className="w-full h-full object-cover rounded-lg"
+            />
+          ) : hasThumbnail ? (
+            <img
+              src={item.thumbnailUrl}
+              alt="Video thumbnail"
+              className="object-cover w-full h-full rounded-lg"
+            />
+          ) : (
+            <video
+              src={videoUrl}
+              muted
+              controls={false}
+              autoPlay={false}
+              className="w-full h-full object-cover rounded-lg"
+              onLoadedData={e => { e.target.currentTime = 0; }}
+              style={{ pointerEvents: 'none' }}
+            />
+          )}
+        </div>
+        {/* Title & Price */}
+        <h3 className="text-white text-xl font-semibold mt-2 mb-1 truncate w-full text-center">{item.title}</h3>
+        <div className="text-gray-300 text-base mb-4">
+          Price: <span className="text-blue-400 font-bold">{item.price} ETH</span>
+        </div>
+        {/* Pay Button */}
+        {!hasPaid && (
+          <button
+            className="w-full py-2 mb-4 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-500 hover:to-purple-500 text-white font-bold text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            disabled={processing}
+            onClick={handlePayment}
+          >
+            {processing ? "Processing..." : `Pay ${item.price} ETH`}
+          </button>
+        )}
+      </div>
+      {/* Like, Dislike, Share */}
+      <div className="flex justify-center items-center gap-4 mt-2 w-full">
+        <button
+          type="button"
+          className="flex items-center gap-2 text-white border border-green-500 font-medium rounded px-4 py-1.5 text-center hover:bg-green-500 hover:text-white transition"
+        >
+          <AiOutlineLike />
+        </button>
+        <button
+          type="button"
+          className="flex items-center gap-2 text-white border border-red-500 font-medium rounded px-4 py-1.5 text-center hover:bg-red-500 hover:text-white transition"
+        >
+          <AiOutlineDislike />
+        </button>
+        <button
+          type="button"
+          className="flex items-center gap-2 text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded px-4 py-1.5 text-center transition"
+          onClick={() => {
+            navigator.clipboard.writeText(window.location.href)
+              .then(() => {
+                toast.success("Link copied to clipboard!", { position: "top-center" });
+              })
+              .catch(() => {
+                toast.error("Failed to copy link.", { position: "top-center" });
+              });
+          }}
+        >
+          <FaRegShareSquare /> Share
+        </button>
       </div>
     </div>
   )
