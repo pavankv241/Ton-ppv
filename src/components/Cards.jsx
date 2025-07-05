@@ -19,8 +19,9 @@ import { parseEther, formatEther } from '../contractConfig'
 import { AiOutlineLike, AiOutlineDislike } from "react-icons/ai"
 import { FaRegShareSquare } from "react-icons/fa";
 
-function Cards({ item, setProcessing, processing, marketplace }) {
+function Cards({ item, marketplace }) {
   const [hasPaid, setHasPaid] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   const videoUrl = `https://gateway.pinata.cloud/ipfs/${item.videoHash}`;
   const hasThumbnail = item.thumbnailHash && item.thumbnailHash !== "";
