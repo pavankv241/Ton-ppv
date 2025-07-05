@@ -132,10 +132,26 @@ function Create({ marketplace, account, setMarketplace }) {
       // SMART CONTRACT INTERACTION - Transaction pattern
       // Time Complexity: O(1) for contract call
       // Space Complexity: O(1) for transaction data
-      const tx = await marketplace.mint(
-        videoHash,  // _tokenURI (using video hash as token URI)
-        price       // _price
-      );
+      console.log("Available contract functions:", Object.keys(marketplace.functions));
+      
+      let tx;
+      if (marketplace.uploadVideo) {
+        console.log("Using uploadVideo function...");
+        tx = await marketplace.uploadVideo(
+          videoHash,
+          thumbnailHash,
+          price,
+          displayTime
+        );
+      } else if (marketplace.mint) {
+        console.log("Using mint function...");
+        tx = await marketplace.mint(
+          videoHash,  // _tokenURI (using video hash as token URI)
+          price       // _price
+        );
+      } else {
+        throw new Error("No uploadVideo or mint function found in contract");
+      }
 
       console.log("Transaction hash:", tx.hash);
 

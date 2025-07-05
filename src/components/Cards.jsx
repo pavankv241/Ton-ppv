@@ -40,12 +40,13 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
   // Time Complexity: O(1) for contract call
   // Space Complexity: O(1) for boolean result
   const checkViewAccess = async () => {
+    if (!marketplace || !account) return;
+    
     try {
-      const marketplacecontract = marketplace
-      const hasAccess = await marketplacecontract.getview(item.id);
-      setCanView(hasAccess);
+      const canViewVideo = await marketplace.canView(item.id, account);
+      setCanView(canViewVideo);
     } catch (error) {
-      console.log("Error checking access:", error);
+      console.error("Error checking view access:", error);
       setCanView(false);
     }
   }
@@ -81,7 +82,7 @@ function Cards({ item, currVideo, player, setPlayer, setCurrVideo, account, idx,
       console.log("price to pay: " + price);
       
       // SMART CONTRACT INTERACTION - Payable function call
-      const tx = await marketplacecontract.viewitem(item.id, {
+      const tx = await marketplacecontract.payToView(item.id, {
         value: price
       });
       
