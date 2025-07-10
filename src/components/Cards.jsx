@@ -41,22 +41,22 @@ function Cards({ item, marketplace }) {
   }
 
   return (
-    <div className="card-div bg-[#181824] rounded-xl shadow-lg p-4 flex flex-col items-center w-[320px]">
+    <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 flex flex-col items-center w-[320px] border border-white/20 transition-transform hover:scale-105 hover:shadow-3xl">
       <div className="w-full flex flex-col items-center">
         {/* Video or Thumbnail */}
-        <div className="w-[260px] h-[180px] rounded-lg overflow-hidden bg-gray-800 flex items-center justify-center mb-4 relative">
+        <div className="w-[260px] h-[180px] rounded-2xl overflow-hidden bg-gray-900 flex items-center justify-center mb-4 relative border border-white/10">
           {hasPaid ? (
             <video
               src={videoUrl}
               controls
               autoPlay
-              className="w-full h-full object-cover rounded-lg"
+              className="w-full h-full object-cover rounded-2xl"
             />
           ) : hasThumbnail ? (
             <img
               src={item.thumbnailUrl}
               alt="Video thumbnail"
-              className="object-cover w-full h-full rounded-lg"
+              className="object-cover w-full h-full rounded-2xl"
             />
           ) : (
             <video
@@ -64,25 +64,25 @@ function Cards({ item, marketplace }) {
               muted
               controls={false}
               autoPlay={false}
-              className="w-full h-full object-cover rounded-lg"
+              className="w-full h-full object-cover rounded-2xl opacity-60"
               onLoadedData={e => { e.target.currentTime = 0; }}
               style={{ pointerEvents: 'none' }}
             />
           )}
         </div>
         {/* Title & Price */}
-        <h3 className="text-white text-xl font-semibold mt-2 mb-1 truncate w-full text-center">{item.title}</h3>
-        <div className="text-gray-300 text-base mb-4">
-          Price: <span className="text-blue-400 font-bold">{item.price} ETH</span>
+        <h3 className="text-white text-xl font-bold mt-2 mb-1 truncate w-full text-center drop-shadow-sm">{item.title}</h3>
+        <div className="text-pink-400 text-lg font-semibold mb-4 text-center">
+          {item.price} TON
         </div>
         {/* Pay Button */}
         {!hasPaid && (
           <button
-            className="w-full py-2 mb-4 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-500 hover:to-purple-500 text-white font-bold text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            className="w-full py-2 mb-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold text-base shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400"
             disabled={processing}
             onClick={handlePayment}
           >
-            {processing ? "Processing..." : `Pay ${item.price} ETH`}
+            {processing ? "Processing..." : `Pay ${item.price} TON`}
           </button>
         )}
       </div>
@@ -90,19 +90,19 @@ function Cards({ item, marketplace }) {
       <div className="flex justify-center items-center gap-4 mt-2 w-full">
         <button
           type="button"
-          className="flex items-center gap-2 text-white border border-green-500 font-medium rounded px-4 py-1.5 text-center hover:bg-green-500 hover:text-white transition"
+          className="flex items-center gap-2 text-white border border-green-400 font-medium rounded-lg px-4 py-1.5 text-center hover:bg-green-400/80 hover:text-white transition shadow-sm"
         >
           <AiOutlineLike />
         </button>
         <button
           type="button"
-          className="flex items-center gap-2 text-white border border-red-500 font-medium rounded px-4 py-1.5 text-center hover:bg-red-500 hover:text-white transition"
+          className="flex items-center gap-2 text-white border border-red-400 font-medium rounded-lg px-4 py-1.5 text-center hover:bg-red-400/80 hover:text-white transition shadow-sm"
         >
           <AiOutlineDislike />
         </button>
         <button
           type="button"
-          className="flex items-center gap-2 text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded px-4 py-1.5 text-center transition"
+          className="flex items-center gap-2 text-white bg-blue-500/80 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg px-4 py-1.5 text-center transition shadow-sm"
           onClick={() => {
             navigator.clipboard.writeText(window.location.href)
               .then(() => {

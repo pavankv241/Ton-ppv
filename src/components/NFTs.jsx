@@ -197,27 +197,19 @@ function NFTs({ marketplace, setMarketplace, account }) {
   }
 
   return (
-    <>
-      <div className='flex flex-wrap gradient-bg-welcome gap-10 justify-center pt-24 pb-5 px-16'>
-        {/* CONDITIONAL RENDERING - Player state-based UI */}
-        {player && (
-          <div style={{
-            width: '650px',
-            height: 'auto',
-            margin: '0 auto',
-            display: 'block',
-          }}>
-            <div className='audio-outer'>
-              <div className='audio-inner'>
-                <PlayerCard item={currVideo} player={player} setPlayer={setPlayer} setCurrVideo={setCurrVideo} currVideo={currVideo} />
-              </div>
-            </div>
-          </div>
-        )}
-        {/* ARRAY RENDERING - Iterative component rendering */}
-        {
-          (videos.length > 0 ?
-            videos.map((video, idx) => (
+    <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#23234b] to-[#3a3a7c] text-white flex flex-col">
+      <section className="flex flex-col items-center justify-center pt-24 pb-10 px-4 md:px-16">
+        <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 mb-8 text-center drop-shadow-lg">
+          Explore All Video NFTs
+        </h1>
+        <p className="text-xl md:text-2xl font-light text-gray-300 max-w-2xl text-center mb-8">
+          Discover, collect, and unlock premium video content on the TON blockchain. Pay to view, support creators, and own unique digital assets.
+        </p>
+      </section>
+      <section className="flex-1 px-2 md:px-16 py-8 bg-transparent">
+        {videos.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 max-w-7xl mx-auto">
+            {videos.map((video, idx) => (
               <Cards 
                 key={idx}
                 item={video} 
@@ -231,14 +223,23 @@ function NFTs({ marketplace, setMarketplace, account }) {
                 setProcessing={setProcessing} 
                 marketplace={marketplace} 
               />
-            ))
-            : (
-              <main style={{ padding: "1rem 0" }}>
-                <h2 className='text-white'>No videos available</h2>
-              </main>
             ))}
-      </div>
-    </>
+          </div>
+        ) : (
+          <main style={{ padding: "1rem 0" }}>
+            <h2 className='text-white text-center text-2xl pt-24'>No videos available</h2>
+          </main>
+        )}
+      </section>
+      {/* Player Modal */}
+      {player && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+          <div className="bg-[#23234b] rounded-2xl p-8 max-w-3xl w-full mx-4 shadow-2xl relative">
+            <PlayerCard item={currVideo} player={player} setPlayer={setPlayer} setCurrVideo={setCurrVideo} currVideo={currVideo} />
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
