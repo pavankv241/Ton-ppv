@@ -64,8 +64,17 @@ export default defineConfig({
     exclude: [],
   },
   build: {
+    outDir: 'build',
     rollupOptions: {
       external: [],
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ton: ['@ton/core', '@ton/ton', '@ton/crypto'],
+          ui: ['react-icons', 'react-toastify'],
+        },
+      },
     },
+    chunkSizeWarningLimit: 1000,
   },
 }) 
