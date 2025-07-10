@@ -1,0 +1,15 @@
+{
+  "walletAddress": "0QClyiq7oFeFwq9rSOJY5J0yYtARbi8y_y5ksdbX0ZbOZWnR",
+  "balance": "1999999997 nanoTONs (~2 TON)",
+  "contractFile": "contracts/PayPerView.fc",
+  "deploymentMethod": "TON Center Web Interface",
+  "timestamp": "2025-07-10T01:52:45.026Z",
+  "steps": [
+    "Visit https://testnet.toncenter.com/",
+    "Connect wallet with address: 0QClyiq7oFeFwq9rSOJY5J0yYtARbi8y_y5ksdbX0ZbOZWnR",
+    "Upload contracts/PayPerView.fc",
+    "Deploy with 0.1 TON initial balance",
+    "Copy contract address",
+    "Update src/config.js"
+  ]
+}

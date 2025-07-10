@@ -1,0 +1,9 @@
+{
+  "walletAddress": "0QClyiq7oFeFwq9rSOJY5J0yYtARbi8y_y5ksdbX0ZbOZWnR",
+  "balance": "1999999997 nanoTONs",
+  "contractFile": "contracts/PayPerView.fc",
+  "network": "testnet",
+  "endpoint": "https://ton.access.orbs.network/55013c0ff5Bd3F8B62C092Ab4D238bEE463E5501/1/testnet/toncenter-api-v2/jsonRPC",
+  "deploymentMethod": "TON SDK",
+  "timestamp": "2025-07-10T02:14:43.067Z"
+}

@@ -1,11 +1,11 @@
 import { ethers } from "ethers";
-import { ZORA_CONFIG } from './config';
+import { TON_CONFIG } from './config';
 
 // Export ethers functions for convenience
 export const { parseEther, formatEther } = ethers.utils;
 
-// Contract address on Zora Sepolia Testnet (newly deployed)
-export const CONTRACT_ADDRESS = ZORA_CONFIG.CONTRACT_ADDRESS;
+// Contract address on TON Testnet (will be updated after deployment)
+export const CONTRACT_ADDRESS = TON_CONFIG.CONTRACT_ADDRESS;
 
 // Contract ABI - PayPerView contract ABI
 export const CONTRACT_ABI = [
@@ -57,13 +57,13 @@ export const CONTRACT_ABI = [
   }
 ];
 
-// Zora Sepolia Testnet configuration
+// TON Testnet configuration
 export const NETWORK_CONFIG = {
-  chainId: ZORA_CONFIG.CHAIN_ID,
-  chainName: ZORA_CONFIG.CHAIN_NAME,
-  rpcUrls: [ZORA_CONFIG.RPC_URL],
-  nativeCurrency: ZORA_CONFIG.NATIVE_CURRENCY,
-  blockExplorerUrls: [ZORA_CONFIG.BLOCK_EXPLORER]
+  chainId: TON_CONFIG.CHAIN_ID,
+  chainName: TON_CONFIG.CHAIN_NAME,
+  rpcUrls: [TON_CONFIG.RPC_URL],
+  nativeCurrency: TON_CONFIG.NATIVE_CURRENCY,
+  blockExplorerUrls: [TON_CONFIG.BLOCK_EXPLORER]
 };
 
 // Get contract instance
@@ -93,7 +93,7 @@ export const connectWallet = async () => {
       method: 'eth_requestAccounts'
     });
     
-    // Switch to Zora Sepolia Testnet
+    // Switch to TON Testnet
     await window.ethereum.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: NETWORK_CONFIG.chainId }],

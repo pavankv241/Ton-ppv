@@ -1,81 +1,133 @@
+# Zora Premium - TON Pay-Per-View Platform
 
+A pay-per-view video platform built on TON blockchain using TACT language and TypeScript.
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/pavankv241/Premium-Flow.git
-cd Premium-Flow
+## 🏗️ Project Structure
+
+```
+Zora-Premium/
+├── contracts/          # TACT smart contracts
+│   └── PayPerView.tact
+├── wrappers/           # TypeScript contract wrappers
+│   └── PayPerView.ts
+├── tests/              # TypeScript tests
+│   └── PayPerView.test.ts
+├── scripts/            # Deployment and utility scripts
+│   └── deploy.ts
+├── src/                # React frontend
+├── blueprint.toml      # TON Blueprint configuration
+└── package.json        # Dependencies and scripts
 ```
 
-### 2. Install Dependencies
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+
+- TON wallet (mobile app)
+- Testnet TON tokens
+
+### Installation
 ```bash
 npm install
 ```
 
-### 3. Configure Environment Variables
-1. Copy the example environment file:
+### Build
 ```bash
-cp .env.example .env
+npx blueprint build
 ```
 
-2. Update `.env` with your Pinata JWT token:
-```env
-REACT_APP_PINATA_JWT=your_actual_pinata_jwt_token_here
-```
-
-et-faucet-v2.onflow.org/)
-   - [Flow Discord](https://discord.gg/flow) #testnet-faucet channel
-
-### 5. Run the Application
+### Test
 ```bash
-npm start
+npx blueprint test
 ```
 
-The application will be available at `http://localhost:3000`
-
-
-## 📁 Project Structure
-
-```
-src/
-├── config.js              # Centralized configuration
-├── contractConfig.js      # Flow EVM contract configuration
-├── App.js                # Main application component
-├── components/           # React components
-│   ├── Create.jsx       # Video upload component
-│   ├── NFTs.jsx         # Video listing component
-│   ├── Cards.jsx        # Video card component
-│   ├── PlayerCard.jsx   # Video player component
-│   └── Nav.jsx          # Navigation component
-├── .env.example         # Environment variables template
-└── .env                 # Your environment variables (create this)
+### Deploy
+```bash
+npx blueprint run
 ```
 
-## ⚙️ Configuration
+## 📋 Features
 
-The application uses a centralized configuration system:
+### Smart Contract (TACT)
+- **Pay-per-view video access**
+- **Revenue collection and withdrawal**
+- **Video metadata management**
+- **Viewer tracking**
+- **Owner-only administrative functions**
 
-### Environment Variables
-- `REACT_APP_PINATA_JWT` - Your Pinata JWT token for IPFS uploads
+### Frontend (React + TypeScript)
+- **Modern UI with Tailwind CSS**
+- **TON wallet integration**
+- **Video player with access control**
+- **Real-time contract interaction**
 
-### Default Values
-- Display Time: 3600 seconds (1 hour)
-- Minimum Price: 0.001 FLOW
-- Max File Size: 100MB
+## 🎯 Contract Functions
 
-## 🚨 Important Notes
+### For Viewers
+- `purchase()` - Buy video access
+- `getVideoInfo()` - Get video details
+- `hasPurchased()` - Check purchase status
 
-- **Environment**: This is configured for Flow EVM Testnet
-- **Credentials**: Set `REACT_APP_PINATA_JWT` in your `.env` file
-- **Tokens**: Ensure you have FLOW testnet tokens for transactions
-- **Network**: Make sure MetaMask is connected to Flow EVM Testnet
-- **Security**: Never commit your `.env` file to version control
+### For Content Creators
+- `withdraw()` - Withdraw revenue
+- `update_video()` - Update video details
+- `toggle_active()` - Toggle video availability
 
-## 🔗 Links
+## 🔧 Development
 
-- [Flow EVM Testnet](https://testnet.evm.nodes.onflow.org/)
-- [Pinata IPFS](https://app.pinata.cloud/)
-- [Flow Faucet](https://testnet-faucet-v2.onflow.org/)
+### Add New Contract
+```bash
+npx blueprint create ContractName
+```
 
-## 📝 License
+### Run Tests
+```bash
+npm run blueprint:test
+```
 
-This project is open source and available under the MIT License.
+### Build Contracts
+```bash
+npm run blueprint:build
+```
+
+### Deploy to Testnet
+```bash
+npm run deploy:ton
+```
+
+## 🌐 Networks
+
+- **Testnet**: `https://testnet.toncenter.com/api/v2`
+- **Mainnet**: `https://toncenter.com/api/v2`
+
+## 💰 Wallet Configuration
+
+- **Testnet Wallet**: `0QClyiq7oFeFwq9rSOJY5J0yYtARbi8y_y5ksdbX0ZbOZWnR`
+- **Balance**: 2.00 TON (sufficient for deployment)
+
+## 📚 Technologies
+
+- **TACT** - Smart contract language
+- **TypeScript** - Type-safe development
+- **TON Blueprint** - Development framework
+- **React** - Frontend framework
+- **Tailwind CSS** - Styling
+- **@ton/ton** - TON SDK
+
+## 🔗 Useful Links
+
+- [TON Documentation](https://ton.org/docs)
+- [TACT Documentation](https://tact-lang.org)
+- [TON Blueprint](https://github.com/ton-community/blueprint)
+- [TON Testnet Explorer](https://testnet.tonscan.org)
+- [TON Community](https://t.me/ton_blockchain)
+
+## 📞 Support
+
+- **TON Community**: @ton_blockchain
+- **TACT Community**: @tact_lang
+- **TON Developers**: @ton_developers
+
+## 📄 License
+
+MIT License - see LICENSE file for details.

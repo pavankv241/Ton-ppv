@@ -1,0 +1,14 @@
+{
+  "network": "TON Testnet",
+  "walletAddress": "0QClyiq7oFeFwq9rSOJY5J0yYtARbi8y_y5ksdbX0ZbOZWnR",
+  "contractLanguage": "FunC",
+  "contractFile": "contracts/PayPerView.fc",
+  "deploymentMethod": "TON Center API",
+  "timestamp": "2025-07-10T01:51:47.826Z",
+  "instructions": [
+    "1. Visit https://testnet.toncenter.com/",
+    "2. Use the FunC compiler to compile PayPerView.fc",
+    "3. Deploy using your wallet address",
+    "4. Update src/config.js with the deployed address"
+  ]
+}

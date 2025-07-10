@@ -1,0 +1,18 @@
+{
+  "compiler": {
+    "version": "0.4.0"
+  },
+  "contracts": {
+    "PayPerView": {
+      "path": "./contracts/PayPerView.tact",
+      "output": "./build/PayPerView"
+    }
+  },
+  "deploy": {
+    "network": "testnet",
+    "wallet": "0QClyiq7oFeFwq9rSOJY5J0yYtARbi8y_y5ksdbX0ZbOZWnR"
+  },
+  "stdlib": {
+    "path": "./node_modules/@stdlib/stdlib"
+  }
+} 

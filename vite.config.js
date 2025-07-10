@@ -1,0 +1,71 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
+
+export default defineConfig({
+  plugins: [
+    {
+      name: 'buffer-polyfill',
+      transformIndexHtml() {
+        return [
+          {
+            tag: 'script',
+            attrs: { type: 'module' },
+            children: `
+              import { Buffer } from 'buffer';
+              window.Buffer = Buffer;
+              window.global = window;
+              window.process = { env: {} };
+            `
+          }
+        ]
+      }
+    },
+    nodePolyfills({
+      // Whether to polyfill specific globals
+      globals: {
+        Buffer: true,
+        global: true,
+        process: true,
+      },
+      // Whether to polyfill `global`
+      protocolImports: true,
+    }),
+    react()
+  ],
+  define: {
+    global: 'globalThis',
+    'process.env': {},
+    'globalThis.Buffer': 'Buffer',
+  },
+  resolve: {
+    alias: {
+      buffer: 'buffer',
+      process: 'process/browser',
+      crypto: 'crypto-browserify',
+      stream: 'stream-browserify',
+      util: 'util',
+    },
+  },
+  optimizeDeps: {
+    include: ['buffer', 'process', 'crypto-browserify', 'stream-browserify', 'util'],
+    esbuildOptions: {
+      define: {
+        global: 'globalThis',
+      },
+      loader: {
+        '.js': 'jsx',
+      },
+    },
+  },
+  esbuild: {
+    loader: 'jsx',
+    include: /src\/.*\.[tj]sx?$/,
+    exclude: [],
+  },
+  build: {
+    rollupOptions: {
+      external: [],
+    },
+  },
+}) 

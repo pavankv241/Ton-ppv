@@ -11,11 +11,11 @@
  */
 
 import React, { useEffect, useState } from 'react'
-import { ethers } from "ethers"
 import axios from 'axios'
 import { toast } from 'react-toastify'
-import { parseEther } from '../contractConfig'
 import { PINATA_CONFIG, DEFAULTS, isPinataConfigured, getPinataHeaders } from '../config'
+import { createVideoUploadTransaction, getContractInfo } from '../utils/ton-transactions'
+import { useTonConnectUI } from '@tonconnect/ui-react'
 
 function Create({ marketplace, account, setMarketplace }) {
 
@@ -28,6 +28,9 @@ function Create({ marketplace, account, setMarketplace }) {
     title: "",
     price: DEFAULTS.MIN_PRICE
   });
+
+  // TonConnect UI
+  const [tonConnectUI] = useTonConnectUI();
 
   useEffect(() => {
     document.title = "Create Video"
@@ -63,6 +66,46 @@ function Create({ marketplace, account, setMarketplace }) {
     }
   };
 
+  // TON CONTRACT INTERACTION - Call counter function using TonConnect
+  const callTonContract = async (ipfsHash) => {
+    try {
+      if (!account) {
+        throw new Error("Please connect your TON wallet first");
+      }
+
+      toast.info("Creating TON blockchain transaction...", {
+        position: "top-center",
+      });
+
+      // Create transaction using TonConnect
+      const transaction = createVideoUploadTransaction(
+        ipfsHash, 
+        forminfo.title, 
+        forminfo.price, 
+        account
+      );
+
+      console.log("Sending transaction:", transaction);
+
+      // Send transaction via TonConnect
+      const result = await tonConnectUI.sendTransaction(transaction);
+      
+      console.log("Transaction result:", result);
+
+      toast.success("Video uploaded to TON blockchain!", {
+        position: "top-center",
+      });
+
+      return true;
+    } catch (error) {
+      console.error("TON contract error:", error);
+      toast.error("Failed to update TON blockchain: " + error.message, {
+        position: "top-center",
+      });
+      return false;
+    }
+  };
+
   // MAIN UPLOAD ALGORITHM - Sequential operation pattern
   // Time Complexity: O(n) where n is file size (upload time)
   // Space Complexity: O(1) for local variables
@@ -79,6 +122,15 @@ function Create({ marketplace, account, setMarketplace }) {
       return;
     }
 
+    // Check if wallet is connected
+    if (!account) {
+      toast.error("Please connect your TON wallet first", {
+        position: "top-center",
+      });
+      setIsMinting(false);
+      return;
+    }
+
     // CONFIGURATION VALIDATION - Check external dependencies
     if (!isPinataConfigured()) {
       toast.error("Pinata credentials not configured. Please set REACT_APP_PINATA_JWT environment variable or update config.js", {
@@ -88,10 +140,10 @@ function Create({ marketplace, account, setMarketplace }) {
       return;
     }
 
-    toast.info("Uploading video file", {
+    toast.info("Uploading video file to IPFS", {
       position: "top-center",
     })
-    console.log("uploading video file");
+    console.log("uploading video file to IPFS");
 
     try {
       // FILE UPLOAD ALGORITHM - Binary data processing
@@ -108,70 +160,49 @@ function Create({ marketplace, account, setMarketplace }) {
         headers: getPinataHeaders(),
       });
 
-      toast.success("Video uploaded!", {
-        position: "top-center",
-      })
-
-      // BLOCKCHAIN TRANSACTION - Sequential operation pattern
-      const videoHash = resVideo.data.IpfsHash;
-      const thumbnailHash = ""; // Empty thumbnail hash
-      const price = parseEther(forminfo.price.toString());
-      const displayTime = DEFAULTS.DISPLAY_TIME; // Use default display time
-
-      console.log("Uploading to blockchain with data:");
-      console.log("Video hash:", videoHash);
-      console.log("Thumbnail hash:", thumbnailHash);
-      console.log("Price:", price.toString());
-      console.log("Display time:", displayTime);
-      console.log("Contract address:", marketplace.address);
-
-      toast.info("Uploading video to blockchain", {
-        position: "top-center",
-      })
-
-      // SMART CONTRACT INTERACTION - Transaction pattern
-      // Time Complexity: O(1) for contract call
-      // Space Complexity: O(1) for transaction data
-      console.log("Available contract functions:", Object.keys(marketplace.functions));
+      const ipfsHash = resVideo.data.IpfsHash;
       
-      let tx;
-      if (marketplace.uploadVideo) {
-        console.log("Using uploadVideo function...");
-        tx = await marketplace.uploadVideo(
-          videoHash,
-          thumbnailHash,
-          price,
-          displayTime
-        );
-      } else if (marketplace.mint) {
-        console.log("Using mint function...");
-        tx = await marketplace.mint(
-          videoHash,  // _tokenURI (using video hash as token URI)
-          price       // _price
-        );
-      } else {
-        throw new Error("No uploadVideo or mint function found in contract");
+      toast.success("Video uploaded to IPFS!", {
+        position: "top-center",
+      })
+
+      console.log("IPFS Hash:", ipfsHash);
+      console.log("Video Title:", forminfo.title);
+      console.log("Video Price:", forminfo.price);
+      console.log("TON Contract Address:", getContractInfo().address);
+
+      // TON BLOCKCHAIN INTERACTION - Call smart contract via TonConnect
+      const tonSuccess = await callTonContract(ipfsHash);
+      
+      if (tonSuccess) {
+        // Store video info in localStorage for frontend display
+        const videoInfo = {
+          ipfsHash: ipfsHash,
+          title: forminfo.title,
+          price: forminfo.price,
+          timestamp: Date.now(),
+          contractAddress: getContractInfo().address,
+          network: getContractInfo().network
+        };
+
+        // Get existing videos from localStorage
+        const existingVideos = JSON.parse(localStorage.getItem('tonVideos') || '[]');
+        existingVideos.push(videoInfo);
+        localStorage.setItem('tonVideos', JSON.stringify(existingVideos));
+
+        toast.success("Video successfully uploaded and registered on TON blockchain!", { 
+          position: "top-center" 
+        });
+        
+        // Refresh the page to show the new video
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
       }
-
-      console.log("Transaction hash:", tx.hash);
-
-      toast.info("Wait till transaction confirms....", {
-        position: "top-center"
-      })
-
-      // TRANSACTION CONFIRMATION - Wait for blockchain confirmation
-      const receipt = await tx.wait()
-      console.log("Transaction confirmed:", receipt);
-      toast.success("Video uploaded to blockchain successfully", { position: "top-center" })
-      
-      // Refresh the page to show the new video
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
 
     } catch (error) {
       // ERROR HANDLING - Try-catch with user feedback
-      toast.error("Error uploading video")
+      toast.error("Error uploading video: " + error.message)
       console.log(error);
     }
     setIsMinting(false)
@@ -194,20 +225,35 @@ function Create({ marketplace, account, setMarketplace }) {
             </div>
 
             <div className="mb-4">
-              <label htmlFor="price" className="block mb-2 text-sm font-medium text-white">Price (ETH)</label>
+              <label htmlFor="price" className="block mb-2 text-sm font-medium text-white">Price (TON)</label>
               <input
                 type="number"
                 id="price"
                 name="price"
                 value={forminfo.price}
                 onChange={handleChange}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" placeholder="0.001 ETH" />
+                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                placeholder="Enter price in TON"
+                min={DEFAULTS.MIN_PRICE}
+                step="0.01"
+                required
+              />
             </div>
-            
-            <div className='text-center'>
-              <button onClick={handleEvent} className="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2" disabled={isMinting}>
-                {isMinting ? "Uploading..." : "Upload Video"}
+
+            <div className="mb-4">
+              <button
+                disabled={isMinting || !account}
+                onClick={handleEvent}
+                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 disabled:opacity-50"
+              >
+                {isMinting ? "Uploading..." : "Upload Video to IPFS & TON"}
               </button>
+            </div>
+
+            <div className="mb-4 text-sm text-gray-300">
+              <p>Contract Address: {getContractInfo().address}</p>
+              <p>Network: {getContractInfo().network}</p>
+              <p>Wallet Status: {account ? "Connected" : "Not Connected"}</p>
             </div>
           </form>
         </div>

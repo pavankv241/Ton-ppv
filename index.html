@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="/logo192.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>Video NFT marketplace</title>
+    <script>
+      // Buffer polyfill for TON API compatibility - MUST BE FIRST
+      window.global = window;
+      window.process = { env: {} };
+      if (typeof window.Buffer === 'undefined') {
+        window.Buffer = {
+          from: function(data, encoding) {
+            if (typeof data === 'string') {
+              return new Uint8Array(new TextEncoder().encode(data));
+            }
+            return new Uint8Array(data);
+          },
+          alloc: function(size) {
+            return new Uint8Array(size);
+          },
+          allocUnsafe: function(size) {
+            return new Uint8Array(size);
+          }
+        };
+      }
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/index.js"></script>
+  </body>
+</html> 

@@ -10,7 +10,7 @@
  * 6. Validation Functions - Boolean logic for configuration checks
  */
 
-// Configuration file for Premium Zora application
+// Configuration file for Premium TON application
 
 // Pinata IPFS Configuration
 // Time Complexity: O(1) for configuration access
@@ -21,17 +21,17 @@ export const PINATA_CONFIG = {
   GATEWAY_URL: "https://gateway.pinata.cloud/ipfs/"
 };
 
-// Zora Sepolia Testnet Configuration
-export const ZORA_CONFIG = {
-  CONTRACT_ADDRESS: '0x3557CC57bFeC1Ba4B7119e5589712A6e3B9A3DC7',
-  CHAIN_ID: '0x3b9ac9ff', // Correct chain ID from Zora Sepolia RPC
-  CHAIN_NAME: 'Zora Sepolia Testnet',
-  RPC_URL: 'https://sepolia.rpc.zora.energy',
-  BLOCK_EXPLORER: 'https://sepolia.explorer.zora.energy',
+// TON Testnet Configuration
+export const TON_CONFIG = {
+  CONTRACT_ADDRESS: '', // TODO: Update with deployed contract address from Telegram bot
+  CHAIN_ID: '-3', // TON Testnet chain ID
+  CHAIN_NAME: 'TON Testnet',
+  RPC_URL: 'https://testnet.toncenter.com/api/v2/jsonRPC',
+  BLOCK_EXPLORER: 'https://testnet.tonscan.org',
   NATIVE_CURRENCY: {
-    name: 'ETH',
-    symbol: 'ETH',
-    decimals: 18
+    name: 'TON',
+    symbol: 'TON',
+    decimals: 9
   }
 };
 
@@ -39,8 +39,8 @@ export const ZORA_CONFIG = {
 // Time Complexity: O(1) for configuration access
 // Space Complexity: O(1) for configuration storage
 export const APP_CONFIG = {
-  NAME: "Premium Zora",
-  DESCRIPTION: "PayPerView Video Platform on Zora Sepolia",
+  NAME: "Premium TON",
+  DESCRIPTION: "PayPerView Video Platform on TON Testnet",
   VERSION: "1.0.0"
 };
 
@@ -49,7 +49,7 @@ export const APP_CONFIG = {
 // Space Complexity: O(1) for default value storage
 export const DEFAULTS = {
   DISPLAY_TIME: 3600, // 1 hour in seconds
-  MIN_PRICE: 0.001,   // Minimum price in ETH
+  MIN_PRICE: 0.001,   // Minimum price in TON
   MAX_FILE_SIZE: 100 * 1024 * 1024 // 100MB
 };
 

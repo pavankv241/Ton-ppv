@@ -1,0 +1,8 @@
+{
+  "walletAddress": "EQCwrUgIxg7eKXXce9HH4CF3f6zOZXraPEqCfFPFfSOuDznZ",
+  "isDeployed": false,
+  "network": "testnet",
+  "fundingRequired": true,
+  "fundingBot": "@testgiver_ton_bot",
+  "timestamp": "2025-07-10T02:24:39.409Z"
+}
