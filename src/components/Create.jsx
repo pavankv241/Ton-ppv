@@ -18,56 +18,89 @@ import { createVideoUploadTransaction, getContractInfo } from '../utils/ton-tran
 import { useTonConnectUI } from '@tonconnect/ui-react'
 
 function Create({ marketplace, account, setMarketplace }) {
-
-  // STATE MANAGEMENT - Controlled form components
-  // Time Complexity: O(1) for state updates
-  // Space Complexity: O(1) per state variable
   const [videoFile, setVideoFile] = useState();
   const [isMinting, setIsMinting] = useState(false);
   const [forminfo, setFormInfo] = useState({
     title: "",
     price: DEFAULTS.MIN_PRICE
   });
-
-  // TonConnect UI
   const [tonConnectUI] = useTonConnectUI();
 
   useEffect(() => {
-    document.title = "Create Video"
+    document.title = "Mint NFT"
   }, []);
 
-  // FORM VALIDATION - Input sanitization and validation
-  // Time Complexity: O(1) for validation checks
-  // Space Complexity: O(1) for state updates
   const handleChange = (event) => {
     const { name, value } = event.target;
     if(name === "price") {
-      if (value <= 0) return // Validation: Prevent negative prices
+      if (value <= 0) return
     }
     setFormInfo((prevState) => ({ ...prevState, [name]: value }));
   };
 
-  // FILE PROCESSING - Binary file validation and handling
-  // Time Complexity: O(1) for file type checking
-  // Space Complexity: O(1) for file reference storage
   const videoChangeHandler = (event) => {
     const file = event.target.files[0];
-    try {
-      console.log("Video file type:", file.type);
-    } catch (error) {
-      console.log(error);
-    }
-    // VALIDATION ALGORITHM - File type checking
-    if (file.type.startsWith('video/')) {
+    if (file && file.type.startsWith('video/')) {
       setVideoFile(file);
     } else {
-      alert('Please select a video file.');
-      return;
+      toast.error('Please select a valid video file.', { position: "top-center" });
     }
   };
 
-  // TON CONTRACT INTERACTION - Call counter function using TonConnect
-  const callTonContract = async (ipfsHash) => {
+  const handleEvent = async (e) => {
+    setIsMinting(true)
+    e.preventDefault();
+    if (!videoFile) {
+      toast.error("Please select a video file", { position: "top-center" });
+      setIsMinting(false);
+      return;
+    }
+    if (!account) {
+      toast.error("Please connect your TON wallet first", { position: "top-center" });
+      setIsMinting(false);
+      return;
+    }
+    if (!isPinataConfigured()) {
+      toast.error("Pinata credentials not configured. Please set REACT_APP_PINATA_JWT environment variable or update config.js", { position: "top-center" });
+      setIsMinting(false);
+      return;
+    }
+    toast.info("Uploading video file to IPFS", { position: "top-center" })
+    try {
+      const videoData = new FormData();
+      videoData.append('file', videoFile);
+      const resVideo = await axios({
+        method: "post",
+        url: PINATA_CONFIG.API_URL,
+        data: videoData,
+        headers: getPinataHeaders(),
+      });
+      const ipfsHash = resVideo.data.IpfsHash;
+      toast.success("Video uploaded to IPFS!", { position: "top-center" })
+      const tonSuccess = await callTonContract(ipfsHash);
+      if (tonSuccess) {
+        const videoInfo = {
+          ipfsHash: ipfsHash,
+          title: forminfo.title,
+          price: forminfo.price,
+          timestamp: Date.now(),
+          contractAddress: getContractInfo().address,
+          network: getContractInfo().network
+        };
+        const existingVideos = JSON.parse(localStorage.getItem('tonVideos') || '[]');
+        existingVideos.push(videoInfo);
+        localStorage.setItem('tonVideos', JSON.stringify(existingVideos));
+        toast.success("Video successfully uploaded and registered on TON blockchain!", { position: "top-center" });
+        setTimeout(() => { window.location.reload(); }, 2000);
+      }
+    } catch (error) {
+      toast.error("Error uploading video: " + error.message, { position: "top-center" })
+    }
+    setIsMinting(false)
+  }
+
+  // Helper for TON contract call (kept from original)
+  async function callTonContract(ipfsHash) {
     try {
       if (!account) {
         throw new Error("Please connect your TON wallet first");
@@ -104,158 +137,48 @@ function Create({ marketplace, account, setMarketplace }) {
       });
       return false;
     }
-  };
-
-  // MAIN UPLOAD ALGORITHM - Sequential operation pattern
-  // Time Complexity: O(n) where n is file size (upload time)
-  // Space Complexity: O(1) for local variables
-  const handleEvent = async (e) => {
-    setIsMinting(true)
-    e.preventDefault();
-
-    // VALIDATION - Pre-upload checks
-    if (!videoFile) {
-      toast.error("Please select a video file", {
-        position: "top-center",
-      });
-      setIsMinting(false);
-      return;
-    }
-
-    // Check if wallet is connected
-    if (!account) {
-      toast.error("Please connect your TON wallet first", {
-        position: "top-center",
-      });
-      setIsMinting(false);
-      return;
-    }
-
-    // CONFIGURATION VALIDATION - Check external dependencies
-    if (!isPinataConfigured()) {
-      toast.error("Pinata credentials not configured. Please set REACT_APP_PINATA_JWT environment variable or update config.js", {
-        position: "top-center",
-      });
-      setIsMinting(false);
-      return;
-    }
-
-    toast.info("Uploading video file to IPFS", {
-      position: "top-center",
-    })
-    console.log("uploading video file to IPFS");
-
-    try {
-      // FILE UPLOAD ALGORITHM - Binary data processing
-      // Time Complexity: O(n) where n is file size
-      // Space Complexity: O(n) for FormData storage
-      const videoData = new FormData();
-      videoData.append('file', videoFile);
-
-      // ASYNCHRONOUS API CALL - Promise-based upload
-      const resVideo = await axios({
-        method: "post",
-        url: PINATA_CONFIG.API_URL,
-        data: videoData,
-        headers: getPinataHeaders(),
-      });
-
-      const ipfsHash = resVideo.data.IpfsHash;
-      
-      toast.success("Video uploaded to IPFS!", {
-        position: "top-center",
-      })
-
-      console.log("IPFS Hash:", ipfsHash);
-      console.log("Video Title:", forminfo.title);
-      console.log("Video Price:", forminfo.price);
-      console.log("TON Contract Address:", getContractInfo().address);
-
-      // TON BLOCKCHAIN INTERACTION - Call smart contract via TonConnect
-      const tonSuccess = await callTonContract(ipfsHash);
-      
-      if (tonSuccess) {
-        // Store video info in localStorage for frontend display
-        const videoInfo = {
-          ipfsHash: ipfsHash,
-          title: forminfo.title,
-          price: forminfo.price,
-          timestamp: Date.now(),
-          contractAddress: getContractInfo().address,
-          network: getContractInfo().network
-        };
-
-        // Get existing videos from localStorage
-        const existingVideos = JSON.parse(localStorage.getItem('tonVideos') || '[]');
-        existingVideos.push(videoInfo);
-        localStorage.setItem('tonVideos', JSON.stringify(existingVideos));
-
-        toast.success("Video successfully uploaded and registered on TON blockchain!", { 
-          position: "top-center" 
-        });
-        
-        // Refresh the page to show the new video
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      }
-
-    } catch (error) {
-      // ERROR HANDLING - Try-catch with user feedback
-      toast.error("Error uploading video: " + error.message)
-      console.log(error);
-    }
-    setIsMinting(false)
   }
 
   return (
-    <div className='h-screen pt-24'>
-      <div className="container-fluid mt-5 text-left">
-        <div className="content mx-auto">
-
-          <form className="max-w-sm mx-auto">
-            <div className='max-w-lg mx-auto'>
-              <label className="block mb-2 text-sm font-medium text-white" htmlFor="videofile">Upload Video File</label>
-              <input onChange={videoChangeHandler} name="videofile" className="block w-full mb-4 h-8 text-m text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" type="file" accept="video/*" />
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="title" className="block mb-2 text-sm font-medium text-white">Video Title</label>
-              <input onChange={handleChange} type="text" id="title" name='title' className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" placeholder="Enter video title" required />
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="price" className="block mb-2 text-sm font-medium text-white">Price (TON)</label>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                value={forminfo.price}
-                onChange={handleChange}
-                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
-                placeholder="Enter price in TON"
-                min={DEFAULTS.MIN_PRICE}
-                step="0.01"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <button
-                disabled={isMinting || !account}
-                onClick={handleEvent}
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 disabled:opacity-50"
-              >
-                {isMinting ? "Uploading..." : "Upload Video to IPFS & TON"}
-              </button>
-            </div>
-
-            <div className="mb-4 text-sm text-gray-300">
-              <p>Contract Address: {getContractInfo().address}</p>
-              <p>Network: {getContractInfo().network}</p>
-              <p>Wallet Status: {account ? "Connected" : "Not Connected"}</p>
-            </div>
-          </form>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a1a2e] via-[#23234b] to-[#3a3a7c] py-16 px-4">
+      <div className="w-full max-w-lg bg-[#23234b] rounded-3xl shadow-2xl p-10 flex flex-col items-center">
+        <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-8 text-center">Upload Video</h2>
+        <form className="w-full" onSubmit={handleEvent}>
+          <div className="mb-6">
+            <label className="block mb-2 text-lg font-medium text-white" htmlFor="videofile">Upload Video File</label>
+            <input onChange={videoChangeHandler} name="videofile" className="block w-full text-base text-gray-900 border border-gray-300 rounded-xl cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-400" type="file" accept="video/*" />
+          </div>
+          <div className="mb-6">
+            <label htmlFor="title" className="block mb-2 text-lg font-medium text-white">Video Title</label>
+            <input onChange={handleChange} type="text" id="title" name='title' className="bg-gray-50 border border-gray-300 text-gray-900 text-base rounded-xl focus:ring-purple-400 focus:border-purple-400 block w-full p-3" placeholder="Enter video title" required />
+          </div>
+          <div className="mb-8">
+            <label htmlFor="price" className="block mb-2 text-lg font-medium text-white">Price (TON)</label>
+            <input
+              type="number"
+              id="price"
+              name="price"
+              value={forminfo.price}
+              onChange={handleChange}
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-base rounded-xl focus:ring-purple-400 focus:border-purple-400 block w-full p-3"
+              placeholder="Enter price in TON"
+              min={DEFAULTS.MIN_PRICE}
+              step="0.01"
+              required
+            />
+          </div>
+          <button
+            disabled={isMinting || !account}
+            type="submit"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold text-lg shadow-lg transition-all duration-200 disabled:opacity-50"
+          >
+            {isMinting ? "Uploading..." : "Upload Video"}
+          </button>
+        </form>
+        <div className="mt-8 text-sm text-gray-300 w-full text-center">
+          <p>Contract Address: {getContractInfo().address}</p>
+          <p>Network: {getContractInfo().network}</p>
+          <p>Wallet Status: {account ? "Connected" : "Not Connected"}</p>
         </div>
       </div>
     </div>
