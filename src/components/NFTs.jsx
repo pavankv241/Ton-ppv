@@ -12,13 +12,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { getAllVideosFromLocal, clearAllVideosFromLocal } from '../utils/videoStorage';
-import { toNano, Address } from '@ton/core';
+import { toNano } from '@ton/core';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 
 function NFTs() {
   const [videos, setVideos] = useState([]);
   const [tonConnectUI] = useTonConnectUI();
   const [paying, setPaying] = useState(null); // ipfsHash of video being paid for
+  const [playingVideo, setPlayingVideo] = useState(null); // video object being played
 
   useEffect(() => {
     setVideos(getAllVideosFromLocal());
@@ -27,21 +28,7 @@ function NFTs() {
   const handleClear = () => {
     clearAllVideosFromLocal();
     setVideos([]);
-    localStorage.removeItem('paidVideos');
   };
-
-  function markVideoAsPaid(ipfsHash) {
-    const paid = JSON.parse(localStorage.getItem('paidVideos') || '[]');
-    if (!paid.includes(ipfsHash)) {
-      paid.push(ipfsHash);
-      localStorage.setItem('paidVideos', JSON.stringify(paid));
-    }
-  }
-
-  function hasPaid(ipfsHash) {
-    const paid = JSON.parse(localStorage.getItem('paidVideos') || '[]');
-    return paid.includes(ipfsHash);
-  }
 
   async function handlePay(video) {
     setPaying(video.ipfsHash);
@@ -54,7 +41,7 @@ function NFTs() {
     };
     try {
       await tonConnectUI.sendTransaction(transaction);
-      markVideoAsPaid(video.ipfsHash);
+      setPlayingVideo(video);
       setPaying(null);
     } catch (e) {
       alert('Payment failed or cancelled');
@@ -85,26 +72,33 @@ function NFTs() {
               <div key={idx} className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 flex flex-col items-center w-[320px] border border-white/20 transition-transform hover:scale-105 hover:shadow-3xl">
                 <div className="w-full flex flex-col items-center">
                   <div className="w-[260px] h-[180px] rounded-2xl overflow-hidden bg-gray-900 flex items-center justify-center mb-4 relative border border-white/10">
-                    {hasPaid(video.ipfsHash) ? (
-                      <video
-                        src={`https://gateway.pinata.cloud/ipfs/${video.ipfsHash}`}
-                        controls
-                        className="w-full h-full object-cover rounded-2xl"
+                    {video.thumbnail ? (
+                      <img
+                        src={video.thumbnail}
+                        alt="Video thumbnail"
+                        className="object-cover w-full h-full rounded-2xl"
                       />
                     ) : (
-                      <button
-                        onClick={() => handlePay(video)}
-                        disabled={paying === video.ipfsHash}
-                        className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold text-lg shadow-lg transition-all duration-200 disabled:opacity-50"
-                      >
-                        {paying === video.ipfsHash ? 'Processing...' : `Pay ${video.price} TON to View`}
-                      </button>
+                      <video
+                        src={`https://gateway.pinata.cloud/ipfs/${video.ipfsHash}`}
+                        muted
+                        controls={false}
+                        className="w-full h-full object-cover rounded-2xl opacity-60"
+                        style={{ pointerEvents: 'none' }}
+                      />
                     )}
                   </div>
                   <h3 className="text-white text-xl font-bold mt-2 mb-1 truncate w-full text-center drop-shadow-sm">{video.title}</h3>
                   <div className="text-pink-400 text-lg font-semibold mb-4 text-center">
                     {video.price} TON
                   </div>
+                  <button
+                    onClick={() => handlePay(video)}
+                    disabled={paying === video.ipfsHash}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold text-lg shadow-lg transition-all duration-200 disabled:opacity-50"
+                  >
+                    {paying === video.ipfsHash ? 'Processing...' : `Pay ${video.price} TON to Play Video`}
+                  </button>
                 </div>
               </div>
             ))}
@@ -115,6 +109,31 @@ function NFTs() {
           </main>
         )}
       </section>
+      {/* Video Player Modal */}
+      {playingVideo && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+          <div className="bg-[#23234b] rounded-2xl p-8 max-w-3xl w-full mx-4 shadow-2xl relative">
+            <button
+              onClick={() => setPlayingVideo(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white text-3xl font-bold"
+            >
+              ×
+            </button>
+            <h3 className="text-2xl font-bold mb-4 text-center">{playingVideo.title}</h3>
+            <video
+              controls
+              className="w-full h-96 object-contain rounded-xl mb-4"
+              src={`https://gateway.pinata.cloud/ipfs/${playingVideo.ipfsHash}`}
+            >
+              Your browser does not support the video tag.
+            </video>
+            <div className="flex flex-col md:flex-row justify-between text-gray-300 text-sm gap-2">
+              <span>Price: <span className="text-pink-400 font-bold">{playingVideo.price} TON</span></span>
+              <span>IPFS Hash: {playingVideo.ipfsHash}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
