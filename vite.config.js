@@ -1,8 +1,17 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import fs from 'fs'
+import path from 'path'
 
 export default defineConfig({
+  server: {
+    https: false,
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: true,
+    allowedHosts: ['6fc16a90cf05.ngrok-free.app'],
+  },
   plugins: [
     {
       name: 'buffer-polyfill',

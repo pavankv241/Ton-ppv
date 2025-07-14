@@ -1,8 +1,21 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { TonConnectButton } from '@tonconnect/ui-react'
+import { TonConnectButton, useTonConnectUI } from '@tonconnect/ui-react'
 
 function Nav({account, loading}) {
+  const [tonConnectUI] = useTonConnectUI();
+
+  // Handler to log the connection URI when the button is clicked
+  const handleTonConnectClick = () => {
+    if (tonConnectUI && tonConnectUI.state && tonConnectUI.state.connectRequest) {
+      // This is the connection URI for the QR code
+      console.log('TonConnect QR URI:', tonConnectUI.state.connectRequest);
+    } else {
+      // Fallback: log the UI state for debugging
+      console.log('TonConnect UI state:', tonConnectUI?.state);
+    }
+  };
+
   return (
    <>
     <div className="fixed z-10 backdrop-blur-sm">
@@ -27,7 +40,9 @@ function Nav({account, loading}) {
             </ul>
             
             <div className="xl:flex items-center space-x-5">
+              <div onClick={handleTonConnectClick} style={{ display: 'inline-block' }}>
               <TonConnectButton />
+              </div>
             </div>
           </div>
         </nav>

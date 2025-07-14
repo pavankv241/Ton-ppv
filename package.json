@@ -43,6 +43,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:https": "vite --https",
     "start": "vite",
     "build": "vite build",
     "preview": "vite preview",
