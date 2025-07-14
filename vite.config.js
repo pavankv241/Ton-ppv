@@ -10,7 +10,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     strictPort: true,
-    allowedHosts: ['6fc16a90cf05.ngrok-free.app'],
+    allowedHosts: ['6fc16a90cf05.ngrok-free.app', 'ton-ppv.vercel.app'],
   },
   plugins: [
     {
