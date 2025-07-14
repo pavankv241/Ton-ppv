@@ -71,14 +71,6 @@ function Home() {
                 >
                   Play Video
                 </button>
-                <a
-                  href={getIpfsUrl(video.ipfsHash)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-2 mt-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base text-center block"
-                >
-                  View on IPFS
-                </a>
               </div>
             ))}
           </div>
